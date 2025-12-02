@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Proveedor{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    {% if object %}
+                        Editar proveedor
+                    {% else %}
+                        Nuevo proveedor
+                    {% endif %}
+                </h5>
+                <a href="{% url 'supplier_list' %}" class="btn btn-sm btn-outline-secondary">
+                    Volver al listado
+                </a>
+            </div>
+
+            <div class="card-body">
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                         
+                            <!-- name -->
+                            <div class="mb-3">
+                                <label class="form-label">Nombre</label>
+                                {{ form.name }}
+                                {{ form.name.errors }}
+                            </div>
+
+                            <!-- rut -->
+                            <div class="mb-3">
+                                <label class="form-label">RUT</label>
+                                {{ form.rut }}
+                                {{ form.rut.errors }}
+                            </div>
+
+                            <!-- contacto -->
+                            <div class="mb-3">
+                                <label class="form-label">Contacto</label>
+                                {{ form.contact_name }}
+                                {{ form.contact_name.errors }}
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <!-- email -->
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                {{ form.contact_email }}
+                                {{ form.contact_email.errors }}
+                            </div>
+
+                            <!-- teléfono -->
+                            <div class="mb-3">
+                                <label class="form-label">Teléfono</label>
+                                {{ form.contact_phone }}
+                                {{ form.contact_phone.errors }}
+                            </div>
+
+                            <!-- dirección -->
+                            <div class="mb-3">
+                                <label class="form-label">Dirección</label>
+                                {{ form.address }}
+                                {{ form.address.errors }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-3">
+                        <a href="{% url 'supplier_list' %}" class="btn btn-outline-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

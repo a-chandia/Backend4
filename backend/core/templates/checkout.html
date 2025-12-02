@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Checkout</h1>
+
+{% if form.non_field_errors %}
+    <div class="alert alert-danger">
+        {% for err in form.non_field_errors %}
+            <div>{{ err }}</div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<form method="post" novalidate>
+    {% csrf_token %}
+    <div class="mb-3">
+        <label class="form-label">Nombre</label>
+        {{ form.customer_name }}
+        {{ form.customer_name.errors }}
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Email</label>
+        {{ form.customer_email }}
+        {{ form.customer_email.errors }}
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Teléfono</label>
+        {{ form.customer_phone }}
+        {{ form.customer_phone.errors }}
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Dirección de envío</label>
+        {{ form.shipping_address }}
+        {{ form.shipping_address.errors }}
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Confirmar orden
+    </button>
+</form>
+{% endblock %}

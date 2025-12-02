@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Orden creada{% endblock %}
+
+{% block content %}
+<h1 class="mb-3">Orden creada</h1>
+
+<p>La orden ha sido registrada correctamente.</p>
+
+<p>
+    <strong>Número de orden:</strong> {{ order.id }}<br>
+    <strong>Cliente:</strong> {{ order.customer_name }}<br>
+    <strong>Total:</strong> $ {{ order.total|floatformat:0 }}
+</p>
+
+<a href="{% url 'shop_product_list' %}" class="btn btn-primary">
+    Volver a la tienda
+</a>
+{% endblock %}

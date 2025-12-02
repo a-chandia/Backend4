@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Nueva compra{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Registrar compra</h5>
+                <a href="{% url 'purchases_list' %}" class="btn btn-sm btn-outline-secondary">
+                    Volver al listado
+                </a>
+            </div>
+
+            <div class="card-body">
+                {% if purchase_form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ purchase_form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    <h6 class="mb-3">Datos generales</h6>
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Sucursal</label>
+                                {{ purchase_form.branch }}
+                                {{ purchase_form.branch.errors }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Proveedor</label>
+                                {{ purchase_form.supplier }}
+                                {{ purchase_form.supplier.errors }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Fecha</label>
+                                {{ purchase_form.date }}
+                                {{ purchase_form.date.errors }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="mb-3">Producto</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Producto</label>
+                                {{ item_form.product }}
+                                {{ item_form.product.errors }}
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label class="form-label">Cantidad</label>
+                                {{ item_form.quantity }}
+                                {{ item_form.quantity.errors }}
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label class="form-label">Costo unitario</label>
+                                {{ item_form.unit_cost }}
+                                {{ item_form.unit_cost.errors }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{% url 'purchases_list' %}" class="btn btn-outline-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">Guardar compra</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

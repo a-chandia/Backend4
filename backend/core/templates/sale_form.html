@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}Nueva venta{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Registrar venta</h5>
+                <a href="{% url 'sales_list' %}" class="btn btn-sm btn-outline-secondary">
+                    Volver al listado
+                </a>
+            </div>
+
+            <div class="card-body">
+                {% if sale_form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ sale_form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                {% if item_form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ item_form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    <!-- DATOS GENERALES -->
+                    <h6 class="mb-3">Datos generales</h6>
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Sucursal</label>
+                                {{ sale_form.branch }}
+                                {{ sale_form.branch.errors }}
+                                {% if user.role == 'vendedor' and user.default_branch %}
+                                    <div class="form-text">
+                                        Sucursal fija: {{ user.default_branch.name }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Método de pago</label>
+                                {{ sale_form.payment_method }}
+                                {{ sale_form.payment_method.errors }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PRODUCTO -->
+                    <h6 class="mb-3">Producto</h6>
+
+                    <!-- Buscador -->
+                    <div class="mb-2">
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                Buscar
+                            </span>
+                            <input
+                                type="text"
+                                id="product-search"
+                                class="form-control"
+                                placeholder="Escribe parte del nombre o SKU del producto..."
+                            >
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label class="form-label">Producto</label>
+                                <select name="product" id="id_product" class="form-select">
+                                    {% for p in products %}
+                                        {% with selected=item_form.product.value %}
+                                            <option value="{{ p.id }}"
+                                                    data-price="{{ p.price }}"
+                                                    {% if selected == p.id|stringformat:"s" %}selected{% endif %}>
+                                                {{ p.name }} ({{ p.sku }})
+                                            </option>
+                                        {% endwith %}
+                                    {% endfor %}
+                                </select>
+                                {{ item_form.product.errors }}
+                                <div class="form-text" id="product-helper">
+                                    Selecciona un producto o filtra usando el buscador.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Cantidad</label>
+                                <input
+                                    type="number"
+                                    name="quantity"
+                                    id="id_quantity"
+                                    min="1"
+                                    value="{{ item_form.quantity.value|default:1 }}"
+                                    class="form-control"
+                                >
+                                {{ item_form.quantity.errors }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PRECIO Y TOTAL -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Precio unitario</label>
+                                <div class="form-control bg-light" readonly>
+                                    $ <span id="product-price">0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Total</label>
+                                <div class="form-control bg-light" readonly>
+                                    $ <span id="sale-total">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ACCIONES -->
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{% url 'sales_list' %}" class="btn btn-outline-secondary">
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            Confirmar venta
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    const productSelect = document.getElementById('id_product');
+    const quantityInput = document.getElementById('id_quantity');
+    const priceSpan = document.getElementById('product-price');
+    const totalSpan = document.getElementById('sale-total');
+    const searchInput = document.getElementById('product-search');
+
+    function formatMoney(value) {
+        if (isNaN(value)) return '0';
+        const rounded = Math.round((value + Number.EPSILON) * 100) / 100;
+        if (Number.isInteger(rounded)) {
+            return String(rounded);      // 300
+        }
+        return rounded.toFixed(2).replace(/\.00$/, ''); // 300.50, nunca 300.00
+    }
+
+    function getSelectedPrice() {
+        if (!productSelect || productSelect.selectedIndex < 0) return 0;
+        const option = productSelect.options[productSelect.selectedIndex];
+        if (!option) return 0;
+        return parseFloat(option.getAttribute('data-price')) || 0;
+    }
+
+    function updatePriceAndTotal() {
+        const price = getSelectedPrice();
+        const qty = parseInt(quantityInput.value || '0', 10);
+        const total = price * qty;
+
+        priceSpan.textContent = formatMoney(price);
+        totalSpan.textContent = formatMoney(total);
+    }
+
+    // Buscador simple sobre el select
+    if (searchInput && productSelect) {
+        searchInput.addEventListener('input', function() {
+            const term = this.value.toLowerCase().trim();
+            let firstVisibleIndex = -1;
+
+            Array.from(productSelect.options).forEach((option, index) => {
+                const text = option.text.toLowerCase();
+                const match = !term || text.includes(term);
+                option.hidden = !match;
+                if (match && firstVisibleIndex === -1) {
+                    firstVisibleIndex = index;
+                }
+            });
+
+            // Si el producto seleccionado quedó oculto, seleccionamos el primero visible
+            if (firstVisibleIndex !== -1) {
+                const current = productSelect.selectedIndex;
+                if (current === -1 || productSelect.options[current].hidden) {
+                    productSelect.selectedIndex = firstVisibleIndex;
+                }
+            }
+
+            updatePriceAndTotal();
+        });
+    }
+
+    if (productSelect) {
+        productSelect.addEventListener('change', updatePriceAndTotal);
+    }
+    if (quantityInput) {
+        quantityInput.addEventListener('input', updatePriceAndTotal);
+    }
+
+    // Inicializar selección y valores
+    if (productSelect && productSelect.options.length > 0 && productSelect.selectedIndex === -1) {
+        productSelect.selectedIndex = 0;
+    }
+    updatePriceAndTotal();
+})();
+</script>
+{% endblock %}

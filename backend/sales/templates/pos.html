@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}POS - Venta{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">POS - Venta rápida</h1>
+
+<div class="alert alert-info">
+    <strong>Sucursal:</strong> {{ branch.name }}
+</div>
+
+<div class="row">
+    <!-- PRODUCTOS -->
+    <div class="col-lg-8">
+        <div class="row">
+            {% for item in products %}
+                {% with p=item.product stock=item.stock %}
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body d-flex flex-column">
+                            <h5>{{ p.name }}</h5>
+                            <p class="text-muted small">SKU: {{ p.sku }}</p>
+                            <p class="fw-bold">$ {{ p.price|floatformat:0 }}</p>
+
+                            {% if stock > 0 %}
+                                <span class="badge bg-success mb-2">Stock: {{ stock }}</span>
+                            {% else %}
+                                <span class="badge bg-danger mb-2">Sin stock</span>
+                            {% endif %}
+
+                            <form method="post" action="{% url 'pos_add' p.id %}" class="mt-auto">
+                                {% csrf_token %}
+                                <div class="input-group input-group-sm">
+                                    <input type="number" name="quantity" value="1" min="1"
+                                           class="form-control" {% if stock == 0 %}disabled{% endif %}>
+                                    <button type="submit" class="btn btn-primary" {% if stock == 0 %}disabled{% endif %}>
+                                        Agregar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endwith %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- CARRITO POS -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between">
+                <span>Carrito</span>
+                <span class="badge bg-secondary">
+                    {{ cart_items|length }} item(s)
+                </span>
+            </div>
+            <div class="card-body">
+                {% if not cart_items %}
+                    <div class="alert alert-light border text-center">
+                        Carrito vacío.
+                    </div>
+                {% else %}
+                    <table class="table table-sm">
+                        <tbody>
+                            {% for item in cart_items %}
+                                <tr>
+                                    <td>{{ item.name }}</td>
+                                    <td class="text-end">{{ item.quantity }}</td>
+                                    <td class="text-end">$ {{ item.subtotal|floatformat:0 }}</td>
+                                    <td class="text-end">
+                                        <form method="post" action="{% url 'pos_remove' item.product_id %}">
+                                            {% csrf_token %}
+                                            <button class="btn btn-sm btn-outline-danger">x</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <div class="d-flex justify-content-between fw-bold mb-3">
+                        <span>Total:</span>
+                        <span>$ {{ cart_total|floatformat:0 }}</span>
+                    </div>
+
+                    <form method="post" action="{% url 'pos_confirm' %}">
+                        {% csrf_token %}
+                        <button class="btn btn-success w-100">Confirmar venta</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

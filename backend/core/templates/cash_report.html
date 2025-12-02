@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Caja del día{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Caja del día</h1>
+
+<div class="mb-3">
+    <strong>Fecha:</strong> {{ today }}
+</div>
+
+{% if user.role == 'vendedor' and user.default_branch %}
+    <div class="mb-3">
+        <strong>Sucursal:</strong> {{ user.default_branch.name }}
+    </div>
+{% endif %}
+
+{% if not sales %}
+    <div class="alert alert-info">
+        No hay ventas registradas para hoy.
+    </div>
+{% else %}
+    <!-- Resumen por método de pago -->
+    <h5>Resumen por método de pago</h5>
+    <table class="table table-bordered mb-4">
+        <thead>
+            <tr>
+                <th>Método de pago</th>
+                <th>Cantidad de ventas</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in summary_by_method %}
+                <tr>
+                    <td>{{ row.payment_method|default:"(sin especificar)" }}</td>
+                    <td>{{ row.count }}</td>
+                    <td>{{ row.total_amount }}</td>
+                </tr>
+            {% endfor %}
+            <tr class="table-secondary">
+                <th colspan="2" class="text-end">Total general</th>
+                <th>{{ grand_total }}</th>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Detalle de ventas -->
+    <h5>Detalle de ventas de hoy</h5>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Hora</th>
+                <th>Sucursal</th>
+                <th>Vendedor</th>
+                <th>Método de pago</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sale in sales %}
+                <tr>
+                    <td>{{ sale.id }}</td>
+                    <td>{{ sale.created_at|time:"H:i" }}</td>
+                    <td>{{ sale.branch.name }}</td>
+                    <td>{{ sale.user.username }}</td>
+                    <td>{{ sale.payment_method }}</td>
+                    <td>{{ sale.total }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+{% endblock %}

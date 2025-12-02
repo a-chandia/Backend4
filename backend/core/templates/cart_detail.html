@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Carrito{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Carrito</h1>
+
+{% if not items %}
+    <div class="alert alert-info">
+        El carrito está vacío.
+    </div>
+    <a href="{% url 'shop_product_list' %}" class="btn btn-primary">Ir a la tienda</a>
+{% else %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th class="text-end">Precio</th>
+                <th class="text-end">Cantidad</th>
+                <th class="text-end">Subtotal</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+                <tr>
+                    <td>{{ item.name }}</td>
+                    <td class="text-end">$ {{ item.price|floatformat:0 }}</td>
+                    <td class="text-end">{{ item.quantity }}</td>
+                    <td class="text-end">$ {{ item.subtotal|floatformat:0 }}</td>
+                    <td class="text-end">
+                        <form method="post" action="{% url 'cart_remove' item.product_id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                Quitar
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+            <tr class="table-secondary">
+                <th colspan="3" class="text-end">Total</th>
+                <th class="text-end">$ {{ total|floatformat:0 }}</th>
+                <th></th>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="d-flex justify-content-between">
+        <a href="{% url 'shop_product_list' %}" class="btn btn-outline-secondary">
+            Seguir comprando
+        </a>
+        <a href="{% url 'checkout' %}" class="btn btn-primary">
+            Ir al pago
+        </a>
+    </div>
+{% endif %}
+{% endblock %}

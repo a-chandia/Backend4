@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}Tienda online{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="h3 mb-0">Tienda online</h1>
+            <small class="text-muted">
+                Catálogo de productos y carrito de compras.
+            </small>
+        </div>
+    </div>
+</div>
+
+{% if branch %}
+    <div class="alert alert-info d-flex justify-content-between align-items-center">
+        <div>
+            <strong>Comprando desde la sucursal:</strong> {{ branch.name }}<br>
+            <small class="text-muted">
+                Dirección: {{ branch.address|default:"Sin dirección" }}
+            </small>
+        </div>
+    </div>
+{% endif %}
+
+<div class="row">
+    <!-- Columna izquierda: productos -->
+    <div class="col-lg-8 mb-4">
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <form class="row g-2">
+                    <div class="col-md-8">
+                        <input
+                            type="text"
+                            id="product-search"
+                            class="form-control"
+                            placeholder="Buscar producto por nombre o SKU..."
+                        >
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <small class="text-muted">
+                            {{ products_data|length }} productos disponibles
+                            {% if branch %} en {{ branch.name }}{% endif %}
+                        </small>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="row" id="product-list">
+            {% for item in products_data %}
+                {% with p=item.product stock=item.stock %}
+                <div class="col-md-4 mb-4 product-card"
+                     data-name="{{ p.name|lower }} {{ p.sku|lower }}">
+                    <div class="card h-100 shadow-sm border-0">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title mb-1">{{ p.name }}</h5>
+                            <p class="text-muted mb-1 small">SKU: {{ p.sku }}</p>
+                            <p class="fw-bold mb-1">$ {{ p.price|floatformat:0 }}</p>
+
+                            <p class="text-muted small mb-2">
+                                {% if p.description %}
+                                    {{ p.description|truncatechars:80 }}
+                                {% else %}
+                                    Sin descripción.
+                                {% endif %}
+                            </p>
+
+                            <p class="small mb-3">
+                                {% if stock is not None %}
+                                    {% if stock > 0 %}
+                                        <span class="badge bg-success">
+                                            Stock: {{ stock }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger">
+                                            Sin stock en esta sucursal
+                                        </span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-secondary">
+                                        Stock no disponible
+                                    </span>
+                                {% endif %}
+                            </p>
+
+                            <form method="post"
+                                  action="{% url 'cart_add' p.id %}"
+                                  class="mt-auto">
+                                {% csrf_token %}
+                                <div class="input-group input-group-sm">
+                                    <input
+                                        type="number"
+                                        name="quantity"
+                                        value="1"
+                                        min="1"
+                                        class="form-control"
+                                        aria-label="Cantidad"
+                                        {% if stock is not None and stock == 0 %}disabled{% endif %}
+                                    >
+                                    <button type="submit"
+                                            class="btn btn-primary"
+                                            {% if stock is not None and stock == 0 %}disabled{% endif %}>
+                                        Agregar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endwith %}
+            {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-info mb-0">
+                        No hay productos disponibles en la tienda.
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Columna derecha: carrito -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Carrito de compras</span>
+                {% if cart_items %}
+                    <span class="badge bg-secondary">
+                        {{ cart_items|length }} ítem{% if cart_items|length != 1 %}s{% endif %}
+                    </span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if not cart_items %}
+                    <div class="alert alert-light border text-center mb-0">
+                        El carrito está vacío.
+                    </div>
+                {% else %}
+                    <div class="table-responsive mb-3">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th class="text-end">Cant.</th>
+                                    <th class="text-end">Subt.</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in cart_items %}
+                                    <tr>
+                                        <td class="small">{{ item.name }}</td>
+                                        <td class="text-end">{{ item.quantity }}</td>
+                                        <td class="text-end">$ {{ item.subtotal|floatformat:0 }}</td>
+                                        <td class="text-end">
+                                            <form method="post" action="{% url 'cart_remove' item.product_id %}">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    x
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <strong>Total:</strong>
+                        <strong>$ {{ cart_total|floatformat:0 }}</strong>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'checkout' %}" class="btn btn-success btn-sm">
+                            Proceder al checkout
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Filtro simple de productos por texto (nombre + SKU)
+    (function() {
+        const searchInput = document.getElementById('product-search');
+        if (!searchInput) return;
+
+        const cards = document.querySelectorAll('#product-list .product-card');
+
+        searchInput.addEventListener('input', function() {
+            const term = this.value.toLowerCase().trim();
+
+            cards.forEach(function(card) {
+                const text = card.getAttribute('data-name') || '';
+                card.style.display = (!term || text.includes(term)) ? '' : 'none';
+            });
+        });
+    })();
+</script>
+{% endblock %}

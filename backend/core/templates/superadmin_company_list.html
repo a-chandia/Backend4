@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Empresas clientes{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">Empresas clientes</h1>
+
+<div class="row">
+    <div class="col-lg-8 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                Listado de empresas
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nombre</th>
+                                <th>RUT</th>
+                                <th>Plan actual</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in companies %}
+                                {% with sub=c.get_active_subscription %}
+                                <tr>
+                                    <td>{{ c.name }}</td>
+                                    <td>{{ c.rut }}</td>
+                                    <td>
+                                        {% if sub %}
+                                            {{ sub.get_plan_name_display }}<br>
+                                            <small class="text-muted">
+                                                {{ sub.start_date }} → {{ sub.end_date }}
+                                            </small>
+                                        {% else %}
+                                            <span class="text-muted small">Sin suscripción</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{% url 'superadmin_company_detail' c.id %}"
+                                           class="btn btn-sm btn-outline-primary">
+                                            Gestionar
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endwith %}
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-3">
+                                        No hay empresas registradas.
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                Nueva empresa
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Nombre</label>
+                        {{ form.name }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">RUT</label>
+                        {{ form.rut }}
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        Crear empresa
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

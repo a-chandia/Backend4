@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Usuarios de la empresa{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">Usuarios de la empresa</h1>
+
+<div class="mb-3">
+    <a href="{% url 'tenant_user_create' %}" class="btn btn-primary btn-sm">
+        Nuevo usuario (gerente / vendedor)
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-sm mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Email</th>
+                        <th>Rol</th>
+                        <th>Sucursal por defecto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                        <tr>
+                            <td>{{ u.username }}</td>
+                            <td>{{ u.email }}</td>
+                            <td>{{ u.role }}</td>
+                            <td>
+                                {% if u.default_branch %}
+                                    {{ u.default_branch.name }}
+                                {% else %}
+                                    <span class="text-muted small">Sin sucursal</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-3">
+                                No hay usuarios registrados.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

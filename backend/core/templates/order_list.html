@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Órdenes web{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Órdenes e-commerce</h1>
+
+{% if not orders %}
+    <div class="alert alert-info">
+        No hay órdenes registradas.
+    </div>
+{% else %}
+    <table class="table table-striped table-hover align-middle">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Fecha</th>
+                <th>Cliente</th>
+                <th>Sucursal</th>
+                <th class="text-end">Total</th>
+                <th>Estado</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for o in orders %}
+                <tr>
+                    <td>#{{ o.id }}</td>
+                    <td>{{ o.created_at|date:"d/m/Y H:i" }}</td>
+                    <td>{{ o.customer_name }}</td>
+                    <td>
+                        {% if o.branch %}
+                        {{ o.branch.name }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+
+                    <td class="text-end">$ {{ o.total|floatformat:0 }}</td>
+                    <td>
+                        <span class="badge
+                            {% if o.status == 'pending' %}bg-warning text-dark
+                            {% elif o.status == 'paid' %}bg-success
+                            {% elif o.status == 'shipped' %}bg-info text-dark
+                            {% elif o.status == 'cancelled' %}bg-danger
+                            {% else %}bg-secondary
+                            {% endif %}
+                        ">
+                            {{ o.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="text-end">
+                        <a href="{% url 'order_detail' o.id %}" class="btn btn-sm btn-outline-primary">
+                            Ver
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+{% endblock %}

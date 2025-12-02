@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Nuevo usuario interno{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">Nuevo usuario (gerente / vendedor)</h1>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">Usuario</label>
+                {{ form.username }}
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                {{ form.email }}
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Rol</label>
+                {{ form.role }}
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Sucursal por defecto</label>
+                {{ form.default_branch }}
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Contraseña</label>
+                {{ form.password1 }}
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Repetir contraseña</label>
+                {{ form.password2 }}
+            </div>
+            <button type="submit" class="btn btn-primary">
+                Crear usuario
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
